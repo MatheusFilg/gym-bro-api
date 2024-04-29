@@ -17,7 +17,6 @@ export async function createWorkout(app: FastifyInstance) {
        }
     }, async (request, reply) => {
         const { aerobic, workoutCategory } = request.body
-        console.log(request.body)
 
         const workout = await prisma.workout.create({
             data: {
