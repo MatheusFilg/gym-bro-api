@@ -21,6 +21,21 @@ model Workout {
   aerobic         Boolean     @default(false)
   createdAt       DateTime    @default(now()) @map("created_at")
   workoutCategory WorkoutType @map("workout_category")
+  exercise        Exercise[]
 
   @@map("workouts")
+}
+
+model Exercise {
+  id       Int     @id @default(autoincrement())
+  exercise String
+  sets     Int
+  reps     Int
+  weight   Int
+  note     String?
+
+  workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  workoutId String
+
+  @@map("exercises")
 }
