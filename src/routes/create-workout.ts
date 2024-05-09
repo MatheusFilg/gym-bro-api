@@ -2,30 +2,32 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { prisma } from "../lib/prisma";
 import { z } from "zod";
+import { BadRequest } from "./_errors/bad-request";
 
-const exerciseSchema = z.object({
-    exercise: z.string(),
-    sets: z.number(),
-    reps: z.number(),
-    weight: z.number(),
-    note: z.string().optional(),
-})
-
-const createWorkoutSchema = z.object({
-    aerobic: z.boolean(),
-    workoutCategory: z.enum(['upper', 'lower']),
-    exercises: z.array(exerciseSchema)
-})
 
 export async function createWorkout(app: FastifyInstance) {
     app
     .withTypeProvider<ZodTypeProvider>()
     .post('/workouts', {
        schema: {
-        body: createWorkoutSchema,
+        summary: 'Create a workout',
+        tags: ['workouts'],
+        body: z.object({
+            aerobic: z.boolean(),
+            workoutCategory: z.enum(['upper', 'lower']),
+        }),
+        response: {
+            201: z.object({
+                workout: z.object({
+                    aerobic: z.boolean(),
+                    workoutCategory: z.enum(['upper', 'lower']),
+                    workoutId: z.string().uuid(),
+                })
+            })
+        }
        }
     }, async (request, reply) => {
-        const { aerobic, workoutCategory, exercises } = request.body
+        const { aerobic, workoutCategory  } = request.body
 
         const workout = await prisma.workout.create({
             data: {
@@ -34,38 +36,10 @@ export async function createWorkout(app: FastifyInstance) {
             }
         })
 
-        const createdExercises = []
-
-        for (const exerciseData of exercises) {
-            try {
-                const createdExercise = await prisma.exercise.create({
-                    data: {
-                        ...exerciseData,
-                        workout: {connect: {id: workout.id } }
-
-                    }
-                })
-                createdExercises.push(createdExercise)
-            } catch (error) {
-                console.error('Erro ao criar exercício:', error)
-                return reply.status(500).send({ error: 'Erro ao criar exercício' })
-            }
+        if(workout === null) {
+            throw new BadRequest('Workout not found')
         }
 
-        const updatedWorkout = await prisma.workout.update({
-            where: {
-                id: workout.id
-            },
-            data: {
-                exercise: {
-                    connect: createdExercises.map(exercise => ({ id: exercise.id }))
-                }
-            },
-            include: {
-                exercise: true
-            }
-        })
-
-        return reply.status(201).send({ workout: updatedWorkout })
+        return reply.status(201).send({ workout: workout })
     })
 }

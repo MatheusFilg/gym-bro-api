@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
+import { BadRequest } from "./_errors/bad-request";
 
 
 export async function getWorkout(app: FastifyInstance) {
@@ -9,6 +10,8 @@ export async function getWorkout(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .get('/workouts', {
         schema: {
+            summary: 'Search all workouts',
+            tags: ['workouts'],
             querystring: z.object({
                 workoutCategory: z.enum(['upper','lower']).optional(),
             }),
@@ -16,10 +19,19 @@ export async function getWorkout(app: FastifyInstance) {
                 200: z.object({
                     workouts: z.array(
                         z.object({
-                            id: z.string().uuid(),
+                            workoutId: z.string().uuid(),
                             aerobic: z.boolean(),
                             workoutCategory: z.enum(['upper','lower']),
                             createdAt: z.date(),
+                            exercises: z.array(
+                                z.object({
+                                    exercise: z.string(),
+                                    sets: z.number(),
+                                    reps: z.number(),
+                                    weight: z.number(),
+                                    note: z.string().nullable(),
+                                })
+                            )
                         })
                     ) 
                 })
@@ -30,10 +42,11 @@ export async function getWorkout(app: FastifyInstance) {
 
         const workouts = await prisma.workout.findMany({
             select: {
-                id: true,
+                workoutId: true,
                 aerobic: true,
                 workoutCategory: true,
-                createdAt: true
+                createdAt: true,
+                exercises: true,
             },
             where: workoutCategory ? {
                 workoutCategory: {
@@ -45,13 +58,18 @@ export async function getWorkout(app: FastifyInstance) {
             }
         })
     
+        if (workouts === null ) {
+            throw new BadRequest('Workout not found')
+        }
+
         return reply.send({
             workouts: workouts.map(workout => {
                 return {
-                    id: workout.id,
+                    workoutId: workout.workoutId,
                     aerobic: workout.aerobic,
                     workoutCategory: workout.workoutCategory,
                     createdAt: workout.createdAt,
+                    exercises: workout.exercises
                 }
             })
         })
