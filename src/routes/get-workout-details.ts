@@ -20,6 +20,15 @@ export async function getWorkoutDetails(app: FastifyInstance) {
                     aerobic: z.boolean(),
                     workoutCategory: z.enum(['upper','lower']),
                     createdAt: z.date(),
+                    exercises: z.array(
+                        z.object({
+                            exercise: z.string(),
+                            sets: z.number(),
+                            reps: z.number(),
+                            weight: z.number(),
+                            note: z.string().nullable(),
+                        })
+                    )
                 })
             }
         },
@@ -32,6 +41,7 @@ export async function getWorkoutDetails(app: FastifyInstance) {
                 aerobic: true,
                 workoutCategory: true,
                 createdAt: true,
+                exercises:true,
             },
             where: {
                 workoutId: workoutId
@@ -47,6 +57,7 @@ export async function getWorkoutDetails(app: FastifyInstance) {
             aerobic: workout.aerobic,
             workoutCategory: workout.workoutCategory,
             createdAt: workout.createdAt,
+            exercises: workout.exercises
         })
     })
 }
