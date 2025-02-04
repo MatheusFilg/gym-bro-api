@@ -1,4 +1,4 @@
-# Gym.Bro Api (Em construção)
+# Gym.Bro Api
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/MatheusFilg/gym-bro-api)
 ![GitHub language count](https://img.shields.io/github/languages/count/MatheusFilg/gym-bro-api)
@@ -6,7 +6,7 @@
 ![Bitbucket open issues](https://img.shields.io/bitbucket/issues/MatheusFilg/gym-bro-api)
 ![Bitbucket open pull requests](https://img.shields.io/bitbucket/pr-raw/MatheusFilg/gym-bro-api)
 
-
+Deploy da aplicação: [Gym.bro API](https://gym-bro-api-707m.onrender.com/docs/static/index.html)
 > Projeto Gym.Bro que é uma aplicação para auxiliar e acompanhar a evolução dos seus treinos.
 
 ### Ajustes e melhorias
